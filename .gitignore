@@ -1,0 +1,4 @@
+mempool_debug
+mempool_bench
+*.dSYM
+*.o
