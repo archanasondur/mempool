@@ -57,28 +57,33 @@ int main() {
         }
 
         // benchmark pool
+        std::vector<void*> ptrs(ITERATIONS);
+
         auto t1 = std::chrono::high_resolution_clock::now();
         for (size_t i = 0; i < ITERATIONS; i++) {
-            void* p = pool.allocate();
-            pool.deallocate(p);
+            ptrs[i] = pool.allocate();
         }
         auto t2 = std::chrono::high_resolution_clock::now();
+        for (size_t i = 0; i < ITERATIONS; i++) {
+            pool.deallocate(ptrs[i]);
+        }
 
         // benchmark malloc
         auto t3 = std::chrono::high_resolution_clock::now();
         for (size_t i = 0; i < ITERATIONS; i++) {
-            void* p = malloc(BLOCK_SIZE);
-            free(p);
+            ptrs[i] = malloc(BLOCK_SIZE);
         }
         auto t4 = std::chrono::high_resolution_clock::now();
+        for (size_t i = 0; i < ITERATIONS; i++) {
+            free(ptrs[i]);
+        }
 
-        auto pool_ns  = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+        auto pool_ns   = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
         auto malloc_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(t4 - t3).count();
 
         std::cout << "pool    total: " << pool_ns   << " ns  |  per-op: " << pool_ns / ITERATIONS   << " ns\n";
         std::cout << "malloc  total: " << malloc_ns  << " ns  |  per-op: " << malloc_ns / ITERATIONS  << " ns\n";
         std::cout << "speedup: " << (double)malloc_ns / (double)pool_ns << "x\n";
     }
-
     return 0;
 }
